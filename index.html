@@ -3,28 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Festival Manager v1.0</title>
+    <title>Festival Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        /* --- DESIGN SYSTEM v1.0 --- */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; color: #212529; padding-bottom: 120px; }
-        .app-header { background-color: #fff; padding: 0.75rem 1rem; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 1020; border-bottom: 1px solid #e9ecef; }
+        /* --- DESIGN SYSTEM --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5; 
+            color: #212529;
+            padding-bottom: 120px;
+        }
+
+        /* Sticky Header */
+        .app-header {
+            background-color: #fff;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            position: sticky; top: 0; z-index: 1020;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        /* Cards */
         .card { border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1rem; }
         .card-header { background-color: #fff; border-bottom: 1px solid #f0f0f0; border-radius: 12px 12px 0 0 !important; font-weight: 600; padding: 0.75rem 1rem; }
+
+        /* Tables */
         .table-custom thead th { background-color: #343a40; color: #fff; border: none; font-weight: 500; }
         .table-striped > tbody > tr:nth-of-type(odd) > * { background-color: rgba(0, 0, 0, 0.02); }
         .table td, .table th { vertical-align: middle; padding: 0.6rem 0.5rem; }
-        .nav-pills .nav-link { border-radius: 8px; color: #6c757d; font-weight: 500; margin: 0 2px; transition: all 0.2s; }
-        .nav-pills .nav-link.active { background-color: #0d6efd; color: white; font-weight: 600; box-shadow: 0 2px 4px rgba(13, 110, 253, 0.25); }
+
+        /* --- MOBILE OPTIMIZED TABS (3 Columns) --- */
+        #mainTabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 1rem;
+        }
+        .nav-pills .nav-item { width: 100%; }
+        .nav-pills .nav-link { 
+            border-radius: 8px; 
+            color: #6c757d; 
+            font-weight: 600; 
+            font-size: 0.9rem; /* Slightly smaller text */
+            padding: 0.6rem 0.2rem; /* Compact padding */
+            width: 100%;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background-color: #e9ecef; /* Slight background for unselected */
+        }
+        .nav-pills .nav-link.active { 
+            background-color: #0d6efd; 
+            color: white; 
+            box-shadow: 0 2px 4px rgba(13, 110, 253, 0.25); 
+        }
+        .nav-pills .nav-link i { margin-right: 4px; }
+
+        /* Read Only Logic */
         body.is-locked .hide-on-lock { display: none !important; }
         body.is-locked input, body.is-locked select, body.is-locked button[type="submit"] { pointer-events: none; opacity: 0.5; background-color: #e9ecef; }
         body.is-locked #lockBtn { pointer-events: auto !important; opacity: 1 !important; }
+
+        /* Helpers */
         .log-entry { font-size: 0.8rem; border-bottom: 1px solid #f0f0f0; padding: 6px 0; line-height: 1.3; }
         .log-time { color: #adb5bd; margin-right: 6px; font-family: monospace; font-size: 0.75rem; }
         .bank-badge { background-color: #ffc107; color: #000; padding: 2px 6px; border-radius: 4px; font-size: 0.65em; font-weight: 800; margin-left: 4px; letter-spacing: 0.5px; }
-        .collapse-trigger { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0.6rem 1rem; background-color: #e9ecef; color: #495057; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: background 0.2s; margin-top: 10px; }
+        
+        .collapse-trigger {
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; padding: 0.6rem 1rem;
+            background-color: #e9ecef; color: #495057;
+            border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem;
+            transition: background 0.2s; margin-top: 10px;
+        }
         .collapse-trigger[aria-expanded="true"] .bi-chevron-down { transform: rotate(180deg); }
+
         #statusMessage { position: fixed; top: 140px; right: 20px; z-index: 2000; display: none; background: #198754; color: white; border: none; font-weight: 500; }
         #configError { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; color: white; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
     </style>
@@ -44,16 +100,19 @@
 
 <div class="app-header">
     <div class="d-flex justify-content-between align-items-center">
-        <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Festival Manager <span class="badge bg-dark ms-1">v1.0</span></small>
+        <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Festival Manager <span class="badge bg-dark ms-1">v1.1</span></small>
         <div id="currentUserDisplay" class="text-end small fw-bold text-primary" style="font-size: 0.8rem;"></div>
     </div>
+
     <h3 class="fw-bold text-dark my-1 text-truncate" id="headerTitle">Laden...</h3>
+
     <div class="d-flex gap-2 mt-2">
         <div class="input-group input-group-sm flex-grow-1">
             <label class="input-group-text bg-light" for="festivalSelect"><i class="bi bi-collection"></i></label>
             <select id="festivalSelect" class="form-select fw-bold text-secondary" onchange="switchFestival()"></select>
             <button class="btn btn-outline-primary hide-on-lock" onclick="openCreateFestivalModal()" title="Neu"><i class="bi bi-plus-lg"></i></button>
         </div>
+
         <div class="d-flex gap-1">
             <button type="button" class="btn btn-outline-info btn-sm" onclick="openHelpModal()"><i class="bi bi-question-lg"></i></button>
             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="changeUser()"><i class="bi bi-person-fill"></i></button>
@@ -61,34 +120,68 @@
             <button class="btn btn-outline-danger btn-sm hide-on-lock" onclick="deleteCurrentFestival()"><i class="bi bi-trash"></i></button>
         </div>
     </div>
+
     <div id="lockedBanner" class="alert alert-warning align-items-center py-1 mt-2 mb-0 border-warning" style="display:none;">
         <i class="bi bi-lock-fill me-2 fs-5"></i> 
-        <div class="small fw-bold lh-1">Read Only Modus<br><span class="fw-normal" style="font-size:0.75rem">Bearbeitung gesperrt.</span></div>
+        <div class="small fw-bold lh-1">
+            Read Only Modus<br>
+            <span class="fw-normal" style="font-size:0.75rem">Bearbeitung gesperrt.</span>
+        </div>
     </div>
 </div>
 
 <div class="container">
-    <ul class="nav nav-pills nav-fill mb-3" id="mainTabs" role="tablist">
-        <li class="nav-item"><button class="nav-link active" id="tab-users" data-bs-toggle="tab" data-bs-target="#pane-users" type="button"><i class="bi bi-people"></i> Personen</button></li>
-        <li class="nav-item"><button class="nav-link" id="tab-finance" data-bs-toggle="tab" data-bs-target="#pane-finance" type="button"><i class="bi bi-cart"></i> Finanzen</button></li>
-        <li class="nav-item"><button class="nav-link" id="tab-balance" data-bs-toggle="tab" data-bs-target="#pane-balance" type="button"><i class="bi bi-calculator"></i> Abrechnung</button></li>
+
+    <ul class="nav nav-pills" id="mainTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="tab-users" data-bs-toggle="tab" data-bs-target="#pane-users" type="button"><i class="bi bi-people"></i> Personen</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="tab-finance" data-bs-toggle="tab" data-bs-target="#pane-finance" type="button"><i class="bi bi-cart"></i> Finanzen</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="tab-balance" data-bs-toggle="tab" data-bs-target="#pane-balance" type="button"><i class="bi bi-calculator"></i> Abrechnung</button>
+        </li>
     </ul>
 
     <div class="tab-content">
+        
         <div class="tab-pane fade show active" id="pane-users">
             <div class="card">
                 <div class="card-body">
                     <div class="small text-muted mb-3 text-center" id="festivalDateDisplay"></div>
+                    
                     <form id="userForm" class="mb-3">
                         <div class="row g-2">
                             <div class="col-12"><input type="text" class="form-control" id="userNameInput" placeholder="Name" required></div>
-                            <div class="col-6"><label class="form-label small m-0 text-muted">Anreise</label><input type="date" class="form-control" id="dateStart" required><div class="form-check mt-1 small"><input class="form-check-input" type="checkbox" id="lateArrival"> <label class="form-check-label text-muted" for="lateArrival">Abends (0.5)</label></div></div>
-                            <div class="col-6"><label class="form-label small m-0 text-muted">Abreise</label><input type="date" class="form-control" id="dateEnd" required><div class="form-check mt-1 small"><input class="form-check-input" type="checkbox" id="earlyDeparture"> <label class="form-check-label text-muted" for="earlyDeparture">Früh weg (0.5)</label></div></div>
-                            <div class="col-12 d-flex justify-content-end gap-2 mt-2 hide-on-lock"><button type="button" id="cancelUserEditBtn" class="btn btn-secondary btn-sm d-none" onclick="cancelUserEdit()">Abbruch</button><button type="submit" id="saveUserBtn" class="btn btn-primary btn-sm w-100">Hinzufügen</button></div>
+                            <div class="col-6">
+                                <label class="form-label small m-0 text-muted">Anreise</label>
+                                <input type="date" class="form-control" id="dateStart" required>
+                                <div class="form-check mt-1 small"><input class="form-check-input" type="checkbox" id="lateArrival"> <label class="form-check-label text-muted" for="lateArrival">Abends (0.5)</label></div>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small m-0 text-muted">Abreise</label>
+                                <input type="date" class="form-control" id="dateEnd" required>
+                                <div class="form-check mt-1 small"><input class="form-check-input" type="checkbox" id="earlyDeparture"> <label class="form-check-label text-muted" for="earlyDeparture">Früh weg (0.5)</label></div>
+                            </div>
+                            <div class="col-12 d-flex justify-content-end gap-2 mt-2 hide-on-lock">
+                                <button type="button" id="cancelUserEditBtn" class="btn btn-secondary btn-sm d-none" onclick="cancelUserEdit()">Abbruch</button>
+                                <button type="submit" id="saveUserBtn" class="btn btn-primary btn-sm w-100">Hinzufügen</button>
+                            </div>
                         </div>
                     </form>
-                    <a class="collapse-trigger" data-bs-toggle="collapse" href="#userListCollapse" role="button"><span><i class="bi bi-list me-2"></i>Liste anzeigen</span> <i class="bi bi-chevron-down"></i></a>
-                    <div class="collapse mt-2" id="userListCollapse"><div class="table-responsive"><table class="table table-sm table-striped table-custom mb-0"><thead><tr><th>Name</th><th>Zeit</th><th class="text-center">Tg</th><th class="hide-on-lock"></th></tr></thead><tbody id="userTableBody"></tbody></table></div></div>
+
+                    <a class="collapse-trigger" data-bs-toggle="collapse" href="#userListCollapse" role="button">
+                        <span><i class="bi bi-list me-2"></i>Liste anzeigen</span> <i class="bi bi-chevron-down"></i>
+                    </a>
+                    <div class="collapse mt-2" id="userListCollapse">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-custom mb-0">
+                                <thead><tr><th>Name</th><th>Zeit</th><th class="text-center">Tg</th><th class="hide-on-lock"></th></tr></thead>
+                                <tbody id="userTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -108,10 +201,22 @@
                                 <div class="col-6"><select class="form-select" id="expensePayer" required></select></div>
                                 <div class="col-6"><input type="number" step="0.01" class="form-control" id="expenseAmount" placeholder="€ Betrag" required></div>
                                 <div class="col-12"><input type="text" class="form-control" id="expenseDesc" placeholder="Beschreibung" required></div>
-                                <div class="col-12 d-flex justify-content-end gap-2 mt-2 hide-on-lock"><button type="button" id="cancelExpenseEditBtn" class="btn btn-secondary btn-sm d-none" onclick="cancelExpenseEdit()">Abbruch</button><button type="submit" id="saveExpenseBtn" class="btn btn-primary btn-sm w-100">Buchen</button></div>
+                                <div class="col-12 d-flex justify-content-end gap-2 mt-2 hide-on-lock">
+                                    <button type="button" id="cancelExpenseEditBtn" class="btn btn-secondary btn-sm d-none" onclick="cancelExpenseEdit()">Abbruch</button>
+                                    <button type="submit" id="saveExpenseBtn" class="btn btn-primary btn-sm w-100">Buchen</button>
+                                </div>
                             </form>
-                            <a class="collapse-trigger" data-bs-toggle="collapse" href="#expListCollapse" role="button"><span><i class="bi bi-list me-2"></i>Liste anzeigen</span> <i class="bi bi-chevron-down"></i></a>
-                            <div class="collapse mt-2" id="expListCollapse"><div class="table-responsive"><table class="table table-sm table-striped table-custom mb-0"><thead><tr><th>Zweck / Zahler</th><th class="text-end">€</th><th class="hide-on-lock"></th></tr></thead><tbody id="expenseTableBody"></tbody></table></div></div>
+                            <a class="collapse-trigger" data-bs-toggle="collapse" href="#expListCollapse" role="button">
+                                <span><i class="bi bi-list me-2"></i>Liste anzeigen</span> <i class="bi bi-chevron-down"></i>
+                            </a>
+                            <div class="collapse mt-2" id="expListCollapse">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped table-custom mb-0">
+                                        <thead><tr><th>Zweck / Zahler</th><th class="text-end">€</th><th class="hide-on-lock"></th></tr></thead>
+                                        <tbody id="expenseTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                         <div class="tab-pane" id="sub-donations">
                             <div class="alert alert-light border small py-2 mb-3"><i class="bi bi-info-circle"></i> Spenden senken die Kosten für alle.</div>
@@ -119,8 +224,17 @@
                                 <div class="col-7"><input type="text" class="form-control" id="donName" placeholder="Spender Name" required></div>
                                 <div class="col-5"><div class="input-group"><input type="number" step="0.01" class="form-control" id="donAmount" placeholder="€" required><button class="btn btn-success hide-on-lock" type="submit"><i class="bi bi-plus-lg"></i></button></div></div>
                             </form>
-                            <a class="collapse-trigger" data-bs-toggle="collapse" href="#donListCollapse" role="button"><span><i class="bi bi-list me-2"></i>Liste anzeigen</span> <i class="bi bi-chevron-down"></i></a>
-                            <div class="collapse mt-2" id="donListCollapse"><div class="table-responsive"><table class="table table-sm table-striped table-custom mb-0"><thead><tr><th>Spender</th><th class="text-end">Betrag</th><th class="hide-on-lock"></th></tr></thead><tbody id="donationTableBody"></tbody></table></div></div>
+                            <a class="collapse-trigger" data-bs-toggle="collapse" href="#donListCollapse" role="button">
+                                <span><i class="bi bi-list me-2"></i>Liste anzeigen</span> <i class="bi bi-chevron-down"></i>
+                            </a>
+                            <div class="collapse mt-2" id="donListCollapse">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped table-custom mb-0">
+                                        <thead><tr><th>Spender</th><th class="text-end">Betrag</th><th class="hide-on-lock"></th></tr></thead>
+                                        <tbody id="donationTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -129,34 +243,69 @@
 
         <div class="tab-pane fade" id="pane-balance">
             <div class="row g-2 mb-3 text-center">
-                <div class="col-4"><div class="card h-100 card-body p-2"><small class="text-muted text-uppercase" style="font-size:0.65rem">Gesamt</small><div class="fw-bold" id="totalSum">0 €</div></div></div>
-                <div class="col-4"><div class="card h-100 card-body p-2"><small class="text-muted text-uppercase" style="font-size:0.65rem">Ø Tag</small><div class="fw-bold text-primary" id="dayRate">0 €</div></div></div>
-                <div class="col-4"><div class="card h-100 card-body p-2"><small class="text-muted text-uppercase" style="font-size:0.65rem">Ist / Soll</small><div class="fw-bold text-success" id="paymentCompare">0 / 0</div></div></div>
+                <div class="col-6"><div class="card h-100 card-body p-2"><small class="text-muted text-uppercase" style="font-size:0.65rem">Gesamt</small><div class="fw-bold" id="totalSum">0 €</div></div></div>
+                <div class="col-6"><div class="card h-100 card-body p-2"><small class="text-muted text-uppercase" style="font-size:0.65rem">Ø Tag</small><div class="fw-bold text-primary" id="dayRate">0 €</div></div></div>
             </div>
-            <a class="collapse-trigger mb-3" data-bs-toggle="collapse" href="#balanceCollapse" role="button"><span><i class="bi bi-table me-2"></i>Bilanz Details</span> <i class="bi bi-chevron-down"></i></a>
-            <div class="collapse mb-3" id="balanceCollapse"><div class="card card-body p-0 overflow-hidden"><div class="table-responsive"><table class="table table-sm table-striped table-custom align-middle mb-0"><thead><tr><th>Name</th><th class="text-end">Soll</th><th class="text-end" title="Auslagen + Zahlungen">Haben*</th><th class="text-end">Saldo</th></tr></thead><tbody id="balanceTableBody"></tbody></table></div><div class="p-2 text-end small text-muted fst-italic">*Haben = Auslagen + Zahlungen</div></div></div>
+
+            <a class="collapse-trigger mb-3" data-bs-toggle="collapse" href="#balanceCollapse" role="button">
+                <span><i class="bi bi-table me-2"></i>Bilanz Details</span> <i class="bi bi-chevron-down"></i>
+            </a>
+            <div class="collapse mb-3" id="balanceCollapse">
+                <div class="card card-body p-0 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-custom align-middle mb-0">
+                            <thead><tr><th>Name</th><th class="text-end">Soll</th><th class="text-end" title="Auslagen + Zahlungen">Haben*</th><th class="text-end">Saldo</th></tr></thead>
+                            <tbody id="balanceTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="p-2 text-end small text-muted fst-italic">*Haben = Auslagen + Zahlungen</div>
+                </div>
+            </div>
+
             <div class="card border-warning mb-3">
                 <div class="card-header bg-warning bg-opacity-10 d-flex justify-content-between align-items-center"><span class="fw-bold text-dark"><i class="bi bi-bank"></i> Bank & Ausgleich</span></div>
                 <div class="card-body">
-                    <div class="mb-3"><label class="small text-muted fw-bold">Wer verwaltet das Geld?</label><select id="bankUserSelect" class="form-select form-select-sm border-warning fw-bold hide-on-lock" onchange="setBankUser()"></select></div>
+                    <div class="mb-3">
+                        <label class="small text-muted fw-bold">Wer verwaltet das Geld?</label>
+                        <select id="bankUserSelect" class="form-select form-select-sm border-warning fw-bold hide-on-lock" onchange="setBankUser()"></select>
+                    </div>
                     <div class="d-flex gap-2 mb-3 bg-light p-2 rounded">
                         <select id="filterSettlementUser" class="form-select form-select-sm" onchange="renderBankSettlement()"></select>
-                        <div class="btn-group btn-group-sm w-100" role="group"><input type="radio" class="btn-check" name="settleDir" id="dirPay" value="pay" checked onchange="renderBankSettlement()"><label class="btn btn-outline-danger" for="dirPay">Zahlen</label><input type="radio" class="btn-check" name="settleDir" id="dirRec" value="receive" onchange="renderBankSettlement()"><label class="btn btn-outline-success" for="dirRec">Erhalten</label></div>
+                        <div class="btn-group btn-group-sm w-100" role="group">
+                            <input type="radio" class="btn-check" name="settleDir" id="dirPay" value="pay" checked onchange="renderBankSettlement()">
+                            <label class="btn btn-outline-danger" for="dirPay">Zahlen</label>
+                            <input type="radio" class="btn-check" name="settleDir" id="dirRec" value="receive" onchange="renderBankSettlement()">
+                            <label class="btn btn-outline-success" for="dirRec">Erhalten</label>
+                        </div>
                     </div>
-                    <div id="paymentActionContainer" class="mb-3 p-3 bg-warning bg-opacity-10 border border-warning rounded" style="display:none;"><form id="settlementForm"><div class="d-flex justify-content-between mb-2 small fw-bold"><span><i class="bi bi-person"></i> <span id="payFromName"></span></span> <i class="bi bi-arrow-right"></i> <span><i class="bi bi-bank"></i> <span id="payToName"></span></span></div><input type="hidden" id="payFrom"><input type="hidden" id="payTo"><div class="input-group"><input type="number" step="0.01" class="form-control" id="payAmount" required><button class="btn btn-success" type="submit">OK</button></div></form></div>
+                    
+                    <div id="paymentActionContainer" class="mb-3 p-3 bg-warning bg-opacity-10 border border-warning rounded" style="display:none;">
+                        <form id="settlementForm">
+                            <div class="d-flex justify-content-between mb-2 small fw-bold">
+                                <span><i class="bi bi-person"></i> <span id="payFromName"></span></span> <i class="bi bi-arrow-right"></i> <span><i class="bi bi-bank"></i> <span id="payToName"></span></span>
+                            </div>
+                            <input type="hidden" id="payFrom"><input type="hidden" id="payTo">
+                            <div class="input-group"><input type="number" step="0.01" class="form-control" id="payAmount" required><button class="btn btn-success" type="submit">OK</button></div>
+                        </form>
+                    </div>
                     <div id="settlementPlan"></div>
                 </div>
             </div>
+
             <div class="card">
                 <div class="card-header bg-white py-1 small text-muted text-uppercase fw-bold">Protokoll</div>
-                <div class="card-body p-2" style="max-height: 200px; overflow-y: auto;"><div id="activityLog" class="log-list"></div></div>
+                <div class="card-body p-2" style="max-height: 200px; overflow-y: auto;">
+                    <div id="activityLog"></div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="modal fade" id="loginModal" data-bs-backdrop="static" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title">Wer bist du?</h5></div><div class="modal-body"><input type="text" class="form-control mb-3" id="sessionUserName" placeholder="Name"><button class="btn btn-primary w-100" onclick="setSessionUser()">Starten</button></div></div></div></div>
+
 <div class="modal fade" id="createFestivalModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title">Neues Festival</h5></div><div class="modal-body"><form id="createFestivalForm"><input type="text" class="form-control mb-2" id="newFestName" placeholder="Name" required><div class="row g-2 mb-2"><div class="col"><input type="date" class="form-control" id="newFestStart" required></div><div class="col"><input type="date" class="form-control" id="newFestEnd" required></div></div><input type="password" class="form-control mb-3" id="newFestPin" placeholder="PIN" required><button class="btn btn-success w-100">Erstellen</button></form></div></div></div></div>
+
 <div class="modal fade" id="helpModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content"><div class="modal-header bg-info bg-opacity-25"><h5 class="modal-title"><i class="bi bi-info-circle-fill"></i> Hilfe</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body small"><h6 class="fw-bold">1. Start</h6><p>Erstelle ein neues Festival (+). Lege den Zeitraum fest.</p><h6 class="fw-bold">2. Personen</h6><p>Erfasse alle Teilnehmer. Das Datum wird automatisch gesetzt.</p><h6 class="fw-bold">3. Finanzen</h6><p>Trage Ausgaben (Einkäufe) und Spenden (Einnahmen) ein.</p><h6 class="fw-bold">4. Bank-Prinzip</h6><p>Eine Person ist die "Bank". Alle Schulden werden an diese Person gezahlt. Alle Guthaben kommen von dieser Person.</p></div><div class="modal-footer"><button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">OK</button></div></div></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -167,13 +316,12 @@
     
     // !!! HIER DEINE DATEN EINFÜGEN !!!
     const firebaseConfig = {
- apiKey: "AIzaSyCnymNGem9y5ZxQIlRxoeS4oFWVUsrvKTo",
+         apiKey: "AIzaSyCnymNGem9y5ZxQIlRxoeS4oFWVUsrvKTo",
         authDomain: "studio-8061574785-a0349.firebaseapp.com",
         projectId: "studio-8061574785-a0349",
         storageBucket: "studio-8061574785-a0349.firebasestorage.app",
         messagingSenderId: "222616368094",
         appId: "1:222616368094:web:ff6803c8cefd1813eea34f"
-
     };
 
     // --- DB ADAPTER ---
@@ -213,11 +361,12 @@
         }
     };
 
-    /* --- APP LOGIC --- */
+    /* --- STATE --- */
     let festivalMeta={currentId:null, list:[], bankMap:{}};
     let appData={users:[], expenses:[], donations:[], settlements:[], logs:[]};
     let sessionUser=null, loginModal, createModal, helpModal, editingUserId=null, editingExpenseId=null, globalBalances=[];
 
+    /* --- INIT --- */
     document.addEventListener('DOMContentLoaded', async ()=>{
         loginModal=new bootstrap.Modal(document.getElementById('loginModal'));
         createModal=new bootstrap.Modal(document.getElementById('createFestivalModal'));
@@ -246,7 +395,6 @@
     async function loadFestivalData() {
         const d = await DB.getData(festivalMeta.currentId);
         appData = d ? d : {users:[], expenses:[], donations:[], settlements:[], logs:[]};
-        // Ensure arrays exist
         ['users','expenses','donations','settlements','logs'].forEach(k=>{if(!appData[k])appData[k]=[];});
     }
 
@@ -301,7 +449,8 @@
     function updateLockState(){
         const f=getCurFest(), isLocked=(f&&f.status==='closed');
         document.body.classList.toggle('is-locked', isLocked);
-        document.getElementById('lockedBanner').style.display=isLocked?'flex':'none';
+        const banner = document.getElementById('lockedBanner');
+        if(isLocked) banner.style.display = 'flex'; else banner.style.display = 'none';
         const b=document.getElementById('lockBtn');
         b.innerHTML=isLocked?'<i class="bi bi-lock-fill"></i>':'<i class="bi bi-unlock"></i>';
         b.className=isLocked?'btn btn-danger btn-sm':'btn btn-outline-secondary btn-sm';
@@ -359,7 +508,7 @@
         appData.settlements.push({id:Date.now(),fromId:f,toId:t,amount:amt}); await addToLog(`Zahlung: ${amt}€ (${fn} an ${tn})`); await saveFestivalData(); renderAll(); showSuccess(); document.getElementById('paymentActionContainer').style.display='none';
     });
 
-    /* --- ACTIONS --- */
+    /* --- DOM MANIPULATION --- */
     function editUser(id){editingUserId=id;const u=appData.users.find(x=>x.id===id); document.getElementById('userNameInput').value=u.name;document.getElementById('dateStart').value=u.start;document.getElementById('dateEnd').value=u.end;document.getElementById('lateArrival').checked=u.lateArr;document.getElementById('earlyDeparture').checked=u.earlyDep; document.getElementById('saveUserBtn').textContent='Ändern';document.getElementById('cancelUserEditBtn').classList.remove('d-none');}
     function cancelUserEdit(){editingUserId=null;document.getElementById('userNameInput').value='';updateDateConstraints(true);document.getElementById('saveUserBtn').textContent='Hinzufügen';document.getElementById('cancelUserEditBtn').classList.add('d-none');}
     async function removeUser(id){if(confirm("Löschen?")){const u=appData.users.find(x=>x.id===id); appData.users=appData.users.filter(u=>u.id!==id);appData.expenses=appData.expenses.filter(e=>e.payerId!=id); await addToLog(`hat ${u?u.name:'User'} gelöscht`); await saveFestivalData();renderAll();}}
@@ -368,7 +517,7 @@
     async function removeExpense(id){const e=appData.expenses.find(x=>x.id===id); appData.expenses=appData.expenses.filter(e=>e.id!==id); await addToLog(`hat Ausgabe ${e?e.desc:''} gelöscht`); await saveFestivalData();renderAll();}
     async function removeDonation(id){if(confirm("Löschen?")){appData.donations=appData.donations.filter(d=>d.id!==id); await addToLog(`hat eine Spende gelöscht`); await saveFestivalData();renderAll();}}
 
-    /* --- RENDER --- */
+    /* --- RENDER LOGIC --- */
     function renderAll(){
         updateLockState(); updateTitle();
         const utb=document.getElementById('userTableBody');utb.innerHTML='';
@@ -379,6 +528,7 @@
         setSel('expensePayer','<option value="" disabled selected>Zahler</option>'+opts);
         setSel('bankUserSelect','<option value="" disabled selected>Wähle Bank...</option>'+opts);
         document.getElementById('bankUserSelect').value=getBankId()||"";
+        
         const fs=document.getElementById('filterSettlementUser'),fo=fs.value;fs.innerHTML='<option value="all">Alle</option>'+opts;if(fo)fs.value=fo;
         if(!fo&&sessionUser){const m=appData.users.find(u=>u.name.toLowerCase()===sessionUser.toLowerCase());if(m)fs.value=m.id;}
 
@@ -408,7 +558,7 @@
             globalBalances.push({id:u.id,name:u.name,diff});
             btb.innerHTML+=`<tr><td>${u.name}</td><td class="text-end text-muted">${cost.toFixed(2)}</td><td class="text-end">${eff.toFixed(2)}</td><td class="text-end fw-bold ${diff>=0?'text-success':'text-danger'}">${diff>0?'+':''}${diff.toFixed(2)}</td></tr>`;
         });
-        document.getElementById('paymentCompare').textContent=`${sumPaid.toFixed(0)} / ${totalDebtPool.toFixed(0)} €`;
+        
         renderBankSettlement();
     }
 
